@@ -22,9 +22,7 @@ export async function GET(
 ) {
   try {
     const { id: roomId } = await params;
-    console.log("🔍 멤버 조회 요청 - roomId:", roomId);
 
-    // room_members 테이블에서 해당 채팅방의 멤버들을 가져옴
     const { data: members, error } = await supabase
       .from("room_members")
       .select(
@@ -48,8 +46,6 @@ export async function GET(
         { status: 500 }
       );
     }
-
-    console.log("📊 조회된 멤버 데이터:", members);
 
     // 멤버 데이터 정리
     const memberList =

@@ -88,7 +88,7 @@ export default function PasswordModal({
               type="button"
               onClick={handleClose}
               disabled={isLoading}
-              className="flex-1 px-4 py-3 rounded-xl hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="flex-1 px-4 py-3 rounded-xl hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
               style={{
                 color: `rgb(var(--text-secondary))`,
                 border: `1px solid rgb(var(--border-color))`,
@@ -100,7 +100,7 @@ export default function PasswordModal({
             <button
               type="submit"
               disabled={isLoading || !password.trim()}
-              className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
+              className="flex-1 px-4 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium cursor-pointer"
             >
               {isLoading ? "확인 중..." : "입장"}
             </button>

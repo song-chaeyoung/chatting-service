@@ -48,14 +48,10 @@ export default function MemberSidebar({
 
   const fetchMembers = async () => {
     try {
-      console.log("🔍 멤버 조회 시작 - roomId:", roomId);
       const response = await fetch(`/api/rooms/${roomId}/members`);
       const data = await response.json();
 
-      console.log("📊 API 응답:", { ok: response.ok, data });
-
       if (response.ok) {
-        console.log("✅ 멤버 설정:", data.members);
         setMembers(data.members);
       } else {
         console.error("❌ Error fetching members:", data.error);

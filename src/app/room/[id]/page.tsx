@@ -8,6 +8,7 @@ import ChatSidebar from "@/components/chat/ChatSidebar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import MemberSidebar from "@/components/chat/MemberSidebar";
+import NotificationPermission from "@/components/NotificationPermission";
 
 export default function ChatRoom() {
   const params = useParams();
@@ -148,6 +149,9 @@ export default function ChatRoom() {
 
         <div className="flex-1 flex min-h-0">
           <div className="flex-1 flex flex-col">
+            <div className="flex-shrink-0 px-6 pt-4">
+              <NotificationPermission />
+            </div>
             <MessageList messages={messages} currentUserId={userName} />
             <div className="flex-shrink-0">
               <MessageInput

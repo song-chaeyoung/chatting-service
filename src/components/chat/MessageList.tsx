@@ -70,7 +70,7 @@ export default function MessageList({
                 }`}
               >
                 <div
-                  className={`flex max-w-xs lg:max-w-md ${
+                  className={`flex max-w-xs lg:max-w-md items-end ${
                     isCurrentUser
                       ? "flex-row-reverse space-x-reverse space-x-3"
                       : "flex-row space-x-3"

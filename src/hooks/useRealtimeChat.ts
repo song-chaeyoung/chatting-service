@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase, Message } from "@/lib/supabase";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { useNotifications } from "./useNotifications";
 
 interface UseRealtimeChatProps {
   roomId: string;
@@ -15,6 +16,7 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { showNotification } = useNotifications();
 
   const fetchMessages = useCallback(async () => {
     const { data } = await supabase
@@ -33,9 +35,31 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
         ...msg,
         user_name: msg.users?.name || "알 수 없는 사용자",
       }));
-      setMessages(formattedMessages);
+
+      setMessages((prevMessages) => {
+        // 새로운 메시지가 있는지 확인하고 알림 표시
+        const newMessages = formattedMessages.filter(
+          (newMsg) => !prevMessages.some((prevMsg) => prevMsg.id === newMsg.id)
+        );
+
+        // 새 메시지 중 다른 사용자의 메시지만 알림 표시
+        newMessages.forEach((newMsg) => {
+          if (newMsg.user_name !== userName) {
+            showNotification({
+              title: `새 메시지 - ${newMsg.user_name}`,
+              body:
+                newMsg.content.length > 50
+                  ? `${newMsg.content.substring(0, 50)}...`
+                  : newMsg.content,
+              tag: `message-${roomId}`,
+            });
+          }
+        });
+
+        return formattedMessages;
+      });
     }
-  }, [roomId]);
+  }, [roomId, userName, showNotification]);
 
   const startPollingMode = useCallback(() => {
     // 기존 폴링 정리
@@ -97,6 +121,19 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
               if (prev.some((msg) => msg.id === formattedMessage.id)) {
                 return prev;
               }
+
+              // 다른 사용자의 메시지인 경우에만 알림 표시
+              if (formattedMessage.user_name !== userName) {
+                showNotification({
+                  title: `새 메시지 - ${formattedMessage.user_name}`,
+                  body:
+                    formattedMessage.content.length > 50
+                      ? `${formattedMessage.content.substring(0, 50)}...`
+                      : formattedMessage.content,
+                  tag: `message-${roomId}`, // 같은 방의 알림은 덮어쓰기
+                });
+              }
+
               return [...prev, formattedMessage];
             });
           }

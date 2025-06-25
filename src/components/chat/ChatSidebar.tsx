@@ -318,7 +318,7 @@ export default function ChatSidebar({
                   type="checkbox"
                   checked={isPrivate}
                   onChange={(e) => setIsPrivate(e.target.checked)}
-                  className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-1"
+                  className="w-3 h-3 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500  focus:ring-1"
                 />
                 <span>비공개</span>
               </label>
@@ -470,7 +470,7 @@ export default function ChatSidebar({
                         {room.name}
                       </p>
                       {room.is_private && (
-                        <span className="px-1.5 py-0.5 text-xs bg-orange-500 bg-opacity-20 text-orange-400 rounded">
+                        <span className="px-1.5 py-0.5 text-xs bg-orange-500 bg-opacity-20 text-white rounded">
                           비공개
                         </span>
                       )}

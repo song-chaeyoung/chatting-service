@@ -70,7 +70,7 @@ export default function MessageInput({
             <button
               onClick={handleSend}
               disabled={!newMessage.trim() || isSending}
-              className="absolute right-2 bottom-[14px] w-8 h-8 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center"
+              className="absolute right-2 bottom-[14px] w-8 h-8 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center cursor-pointer"
             >
               {isSending ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
