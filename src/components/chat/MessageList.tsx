@@ -11,9 +11,18 @@ export default function MessageList({
   currentUserId,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const prevMessagesRef = useRef(0);
+
+  useEffect(() => {
+    if (prevMessagesRef.current < messages.length) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      prevMessagesRef.current = messages.length;
+    }
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView();
+    prevMessagesRef.current = messages.length;
   }, []);
 
   if (messages.length === 0) {
