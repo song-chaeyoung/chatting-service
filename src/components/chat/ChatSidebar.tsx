@@ -235,11 +235,13 @@ export default function ChatSidebar({
         style={{ borderBottom: `1px solid rgb(var(--border-color))` }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">채팅방</h2>
+          <Link href="/">
+            <h2 className="text-lg font-semibold">Chat It!</h2>
+          </Link>
           <div className="flex items-center space-x-2">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg transition-colors hover:opacity-80"
+              className="p-2 rounded-lg transition-colors hover:opacity-80 duration-200 cursor-pointer"
               title={theme === "dark" ? "라이트 모드" : "다크 모드"}
             >
               {theme === "dark" ? (
@@ -274,7 +276,7 @@ export default function ChatSidebar({
             </button>
             <button
               onClick={() => setShowNewRoomInput(true)}
-              className="p-2 rounded-lg transition-colors hover:opacity-80"
+              className="p-2 rounded-lg transition-colors hover:opacity-80 duration-200 cursor-pointer"
               title="새 채팅방"
             >
               <svg
@@ -348,7 +350,7 @@ export default function ChatSidebar({
                   !newRoomName.trim() ||
                   (isPrivate && !password.trim())
                 }
-                className="flex-1 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-gray-600 transition-colors"
+                className="flex-1 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:bg-gray-600 transition-colors cursor-pointer"
               >
                 {isCreating ? "생성 중..." : "생성"}
               </button>
@@ -359,7 +361,7 @@ export default function ChatSidebar({
                   setPassword("");
                   setIsPrivate(false);
                 }}
-                className="px-3 py-1 rounded text-sm transition-colors"
+                className="px-3 py-1 rounded text-sm transition-colors cursor-pointer"
                 style={{
                   backgroundColor: `rgb(var(--bg-tertiary))`,
                   color: `rgb(var(--text-secondary))`,
@@ -440,18 +442,13 @@ export default function ChatSidebar({
                       </svg>
                     ) : (
                       <svg
-                        className="w-4 h-4"
-                        style={{ color: `rgb(var(--text-muted))` }}
-                        fill="none"
-                        stroke="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
                         viewBox="0 0 24 24"
+                        fill="currentColor"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-3.5-.71L6 21l1.71-3.5A8.955 8.955 0 013 12a8 8 0 018-8 8 8 0 018 8z"
-                        />
+                        <path d="M20 13C20 12.4477 19.5523 12 19 12H13C12.4477 12 12 12.4477 12 13V16.3916C12.0002 16.9437 12.4478 17.3916 13 17.3916H16.1631L16.2617 17.3965C16.4907 17.4192 16.706 17.5204 16.8701 17.6846L17.7715 18.5859V18.3916C17.7715 17.8394 18.2193 17.3917 18.7715 17.3916H19C19.5522 17.3916 19.9998 16.9438 20 16.3916V13ZM18 6C18 5.44772 17.5523 5 17 5H5C4.44772 5 4 5.44772 4 6V13.8262C4.00005 14.3784 4.44774 14.8262 5 14.8262H6.56543C7.11762 14.8263 7.56543 15.274 7.56543 15.8262V17.5859L10 15.1514V13C10 11.3431 11.3431 10 13 10H18V6ZM20 10.1738C21.1647 10.5859 22 11.6941 22 13V16.3916C21.9999 17.7812 21.0539 18.9463 19.7715 19.2871V21C19.7715 21.4045 19.528 21.769 19.1543 21.9238C18.7806 22.0786 18.3504 21.993 18.0645 21.707L15.749 19.3916H13C11.8063 19.3916 10.778 18.6929 10.2949 17.6836L7.27246 20.707C6.98648 20.993 6.55628 21.0786 6.18262 20.9238C5.80894 20.769 5.56543 20.4045 5.56543 20V16.8262H5C3.34317 16.8262 2.00005 15.483 2 13.8262V6C2 4.34315 3.34315 3 5 3H17C18.6569 3 20 4.34315 20 6V10.1738Z" />
                       </svg>
                     )}
                   </div>
@@ -467,7 +464,7 @@ export default function ChatSidebar({
                             : `rgb(var(--text-primary))`,
                         }}
                       >
-                        {room.name}
+                        {room.is_private ? "비공개" : room.name}
                       </p>
                       {room.is_private && (
                         <span className="px-1.5 py-0.5 text-xs bg-orange-500 bg-opacity-20 text-white rounded">
@@ -518,7 +515,6 @@ export default function ChatSidebar({
       {/* 비밀번호 입력 모달 */}
       {passwordModal.isOpen && (
         <PasswordModal
-          roomName={passwordModal.roomName}
           onCancel={handlePasswordModalClose}
           onSubmit={handlePasswordSubmit}
         />

@@ -1,13 +1,11 @@
 import { useState } from "react";
 
 interface PasswordModalProps {
-  roomName: string;
   onSubmit: (password: string) => Promise<void>;
   onCancel: () => void;
 }
 
 export default function PasswordModal({
-  roomName,
   onSubmit,
   onCancel,
 }: PasswordModalProps) {
@@ -60,8 +58,7 @@ export default function PasswordModal({
             비공개 채팅방
           </h2>
           <p style={{ color: `rgb(var(--text-secondary))` }}>
-            <span className="font-medium">{roomName}</span>에 입장하려면
-            비밀번호가 필요합니다.
+            비공개 채팅방에 입장하려면 비밀번호가 필요합니다.
           </p>
         </div>
 

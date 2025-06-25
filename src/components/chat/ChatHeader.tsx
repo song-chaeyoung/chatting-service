@@ -60,7 +60,7 @@ export default function ChatHeader({
           </span>
           <button
             onClick={onExit}
-            className="hover:opacity-70 transition-colors"
+            className="hover:opacity-70 transition-colors cursor-pointer"
             style={{ color: `rgb(var(--text-muted))` }}
           >
             <svg

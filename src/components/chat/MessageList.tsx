@@ -34,18 +34,13 @@ export default function MessageList({
             style={{ backgroundColor: `rgb(var(--bg-tertiary))` }}
           >
             <svg
-              className="w-8 h-8"
-              style={{ color: `rgb(var(--text-muted))` }}
-              fill="none"
-              stroke="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
               viewBox="0 0 24 24"
+              fill="currentColor"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-3.5-.71L6 21l1.71-3.5A8.955 8.955 0 013 12a8 8 0 018-8 8 8 0 018 8z"
-              />
+              <path d="M20 13C20 12.4477 19.5523 12 19 12H13C12.4477 12 12 12.4477 12 13V16.3916C12.0002 16.9437 12.4478 17.3916 13 17.3916H16.1631L16.2617 17.3965C16.4907 17.4192 16.706 17.5204 16.8701 17.6846L17.7715 18.5859V18.3916C17.7715 17.8394 18.2193 17.3917 18.7715 17.3916H19C19.5522 17.3916 19.9998 16.9438 20 16.3916V13ZM18 6C18 5.44772 17.5523 5 17 5H5C4.44772 5 4 5.44772 4 6V13.8262C4.00005 14.3784 4.44774 14.8262 5 14.8262H6.56543C7.11762 14.8263 7.56543 15.274 7.56543 15.8262V17.5859L10 15.1514V13C10 11.3431 11.3431 10 13 10H18V6ZM20 10.1738C21.1647 10.5859 22 11.6941 22 13V16.3916C21.9999 17.7812 21.0539 18.9463 19.7715 19.2871V21C19.7715 21.4045 19.528 21.769 19.1543 21.9238C18.7806 22.0786 18.3504 21.993 18.0645 21.707L15.749 19.3916H13C11.8063 19.3916 10.778 18.6929 10.2949 17.6836L7.27246 20.707C6.98648 20.993 6.55628 21.0786 6.18262 20.9238C5.80894 20.769 5.56543 20.4045 5.56543 20V16.8262H5C3.34317 16.8262 2.00005 15.483 2 13.8262V6C2 4.34315 3.34315 3 5 3H17C18.6569 3 20 4.34315 20 6V10.1738Z" />
             </svg>
           </div>
           <h3
@@ -81,7 +76,7 @@ export default function MessageList({
                 <div
                   className={`flex max-w-xs lg:max-w-md items-end ${
                     isCurrentUser
-                      ? "flex-row-reverse space-x-reverse space-x-3"
+                      ? "flex-row-reverse space-x-reverse space-x-3 items-end"
                       : "flex-row space-x-3"
                   }`}
                 >
@@ -105,17 +100,21 @@ export default function MessageList({
                   </div>
 
                   {/* 메시지 내용 */}
-                  <div className="flex-1 min-w-0">
+                  <div
+                    className={`flex-1 min-w-0 ${
+                      isCurrentUser ? "flex flex-col justify-end items-end" : ""
+                    }`}
+                  >
                     <div
-                      className={`flex items-center space-x-2 mb-1 ${
+                      className={`flex items-center mb-1 gap-2 h-[20px] ${
                         isCurrentUser ? "justify-end" : "justify-start"
                       }`}
                     >
                       <span
-                        className="text-sm font-medium"
+                        className="text-sm font-medium "
                         style={{ color: `rgb(var(--text-secondary))` }}
                       >
-                        {isCurrentUser ? "나" : message.user_name}
+                        {isCurrentUser ? "" : message.user_name}
                       </span>
                       <span
                         className="text-xs"
@@ -131,7 +130,7 @@ export default function MessageList({
                       </span>
                     </div>
                     <div
-                      className={`px-4 py-2 rounded-2xl whitespace-pre-wrap break-words ${
+                      className={`px-4 py-2 rounded-2xl whitespace-pre-wrap break-words w-fit ${
                         isCurrentUser ? "rounded-br-sm" : "rounded-bl-sm"
                       }`}
                       style={{

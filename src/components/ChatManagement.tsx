@@ -209,7 +209,6 @@ export default function ChatManagement({
 
         {showPasswordModal && selectedRoom && (
           <PasswordModal
-            roomName={selectedRoom.name}
             onSubmit={handlePasswordSubmit}
             onCancel={() => {
               setShowPasswordModal(false);

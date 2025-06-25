@@ -106,7 +106,7 @@ export default function RoomList({
               key={room.id}
               href={room.is_private ? "#" : `/room/${room.id}`}
               onClick={(e) => handleRoomClick(e, room)}
-              className="block p-4 rounded-xl hover:opacity-80 transition-all duration-200 group"
+              className="block p-4 rounded-xl hover:opacity-80 transition-opacity duration-200 group"
               style={{
                 border: `1px solid rgb(var(--border-color))`,
                 backgroundColor: `rgb(var(--bg-primary))`,
@@ -162,7 +162,7 @@ export default function RoomList({
                             : `rgb(var(--text-primary))`,
                         }}
                       >
-                        {room.name}
+                        {room.is_private ? "비공개" : room.name}
                       </h3>
                       {room.is_private && (
                         <span className="px-2 py-1 text-xs bg-orange-100 text-orange-600 rounded-full">

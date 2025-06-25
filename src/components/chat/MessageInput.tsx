@@ -60,7 +60,7 @@ export default function MessageInput({
               onChange={handleChange}
               onKeyPress={handleKeyPress}
               placeholder="메시지를 입력하세요..."
-              className="w-full px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm transition-all duration-200 placeholder-opacity-60 scrollbar-none"
+              className="w-full px-4 py-3 pr-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none shadow-sm transition-all duration-200 placeholder-opacity-60 scrollbar-none  placeholder:text-currentColor"
               style={{
                 backgroundColor: `rgb(var(--input-bg))`,
                 color: `rgb(var(--text-primary))`,
