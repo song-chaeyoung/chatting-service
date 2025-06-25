@@ -13,8 +13,8 @@ export default function MessageList({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView();
+  }, []);
 
   if (messages.length === 0) {
     return (

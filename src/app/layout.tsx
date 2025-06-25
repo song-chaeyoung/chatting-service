@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "채팅 서비스",
-  description: "실시간 채팅 애플리케이션",
+  title: "Chat It!",
+  description: "Chat It으로 실시간 채팅 서비스를 즐겨보세요!",
 };
 
 export default function RootLayout({

@@ -12,7 +12,6 @@ export default function MessageInput({
   const [newMessage, setNewMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 자동 크기 조절
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -27,6 +26,11 @@ export default function MessageInput({
 
     await onSendMessage(newMessage.trim());
     setNewMessage("");
+
+    // 메시지 전송 후 텍스트 영역에 다시 포커스
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
