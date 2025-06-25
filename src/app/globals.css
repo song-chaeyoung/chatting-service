@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 라이트 테마 색상 */
+  --bg-primary: 255 255 255;
+  --bg-secondary: 249 250 251;
+  --bg-tertiary: 243 244 246;
+  --text-primary: 17 24 39;
+  --text-secondary: 75 85 99;
+  --text-muted: 156 163 175;
+  --border-color: 229 231 235;
+  --sidebar-bg: 249 250 251;
+  --sidebar-text: 55 65 81;
+  --sidebar-hover: 243 244 246;
+  --message-bg: 249 250 251;
+  --message-own-bg: 59 130 246;
+  --message-own-text: 255 255 255;
+  --input-bg: 255 255 255;
+  --input-border: 229 231 235;
+  --scrollbar-thumb: 209 213 219;
+  --scrollbar-thumb-hover: 156 163 175;
+}
+
+.dark {
+  /* 다크 테마 색상 */
+  --bg-primary: 17 24 39;
+  --bg-secondary: 31 41 55;
+  --bg-tertiary: 55 65 81;
+  --text-primary: 243 244 246;
+  --text-secondary: 209 213 219;
+  --text-muted: 156 163 175;
+  --border-color: 55 65 81;
+  --sidebar-bg: 31 41 55;
+  --sidebar-text: 209 213 219;
+  --sidebar-hover: 55 65 81;
+  --message-bg: 55 65 81;
+  --message-own-bg: 59 130 246;
+  --message-own-text: 255 255 255;
+  --input-bg: 55 65 81;
+  --input-border: 75 85 99;
+  --scrollbar-thumb: 75 85 99;
+  --scrollbar-thumb-hover: 107 114 128;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: rgb(var(--bg-primary));
+  color: rgb(var(--text-primary));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ChatGPT 스타일 커스텀 스크롤바 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--scrollbar-thumb));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--scrollbar-thumb-hover));
+}
+
+/* 부드러운 스크롤 */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 텍스트 선택 스타일 */
+::selection {
+  background: #3b82f6;
+  color: white;
+}
+
+/* 포커스 상태 개선 */
+*:focus {
+  outline: none;
+}
+
+/* 애니메이션 개선 */
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 입력 필드 자동완성 스타일 */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px white inset;
+  -webkit-text-fill-color: #374151;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
