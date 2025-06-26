@@ -1,7 +1,7 @@
 interface ChatHeaderProps {
   roomName: string;
   userName: string;
-  connectionStatus: "connecting" | "connected" | "disconnected" | "polling";
+  connectionStatus: "connecting" | "connected" | "disconnected";
   onExit: () => void;
 }
 
@@ -17,10 +17,19 @@ export default function ChatHeader({
         return "bg-green-500";
       case "connecting":
         return "bg-yellow-500";
-      case "polling":
-        return "bg-blue-500";
       default:
         return "bg-red-500";
+    }
+  };
+
+  const getStatusText = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return "실시간 연결됨";
+      case "connecting":
+        return "연결 중...";
+      default:
+        return "연결 끊김";
     }
   };
 
@@ -46,7 +55,7 @@ export default function ChatHeader({
               className="text-sm"
               style={{ color: `rgb(var(--text-secondary))` }}
             >
-              {connectionStatus === "connected" ? "온라인" : "연결 중"}
+              {getStatusText()}
             </span>
           </div>
         </div>

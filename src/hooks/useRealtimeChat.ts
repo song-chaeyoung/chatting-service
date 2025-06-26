@@ -11,94 +11,62 @@ interface UseRealtimeChatProps {
 export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<
-    "connecting" | "connected" | "disconnected" | "polling"
+    "connecting" | "connected" | "disconnected"
   >("connecting");
 
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { showNotification } = useNotifications();
 
-  const fetchMessages = useCallback(async () => {
-    const { data } = await supabase
-      .from("messages")
-      .select(
+  // 초기 메시지 로드 (한 번만)
+  const loadInitialMessages = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from("messages")
+        .select(
+          `
+          *,
+          users!messages_user_id_fkey(name)
         `
-        *,
-        users!messages_user_id_fkey(name)
-      `
-      )
-      .eq("room_id", roomId)
-      .order("created_at", { ascending: true });
+        )
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: true });
 
-    if (data) {
-      const formattedMessages = data.map((msg) => ({
-        ...msg,
-        user_name: msg.users?.name || "알 수 없는 사용자",
-      }));
-
-      setMessages((prevMessages) => {
-        // 새로운 메시지가 있는지 확인하고 알림 표시
-        const newMessages = formattedMessages.filter(
-          (newMsg) => !prevMessages.some((prevMsg) => prevMsg.id === newMsg.id)
-        );
-
-        // 새 메시지 중 다른 사용자의 메시지만 알림 표시
-        newMessages.forEach((newMsg) => {
-          if (newMsg.user_name !== userName) {
-            showNotification({
-              title: `새 메시지 - ${newMsg.user_name}`,
-              body:
-                newMsg.content.length > 50
-                  ? `${newMsg.content.substring(0, 50)}...`
-                  : newMsg.content,
-              tag: `message-${roomId}`,
-            });
-          }
-        });
-
-        return formattedMessages;
-      });
+      if (data) {
+        const formattedMessages = data.map((msg) => ({
+          ...msg,
+          user_name: msg.users?.name || "알 수 없는 사용자",
+        }));
+        setMessages(formattedMessages);
+      }
+    } catch (error) {
+      console.error("초기 메시지 로드 실패:", error);
+      setConnectionStatus("disconnected");
     }
-  }, [roomId, userName, showNotification]);
-
-  const startPollingMode = useCallback(() => {
-    // 기존 폴링 정리
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-    }
-
-    // 즉시 한 번 실행
-    fetchMessages();
-
-    // 1초마다 모든 메시지 다시 가져오기
-    pollingIntervalRef.current = setInterval(async () => {
-      await fetchMessages();
-    }, 1000);
-  }, [fetchMessages]);
+  }, [roomId]);
 
   const setupRealtimeSubscription = useCallback(() => {
     try {
-      // 기존 채널 정리
       if (channelRef.current) {
         channelRef.current.unsubscribe();
         channelRef.current = null;
       }
 
-      // 가장 기본적인 형태: 단순한 채널명, filter 없음
+      console.log(`🔄 실시간 연결 시도: room ${roomId}`);
+      console.log("채널 이름 ", `messages-${roomId}`);
+      console.log("필터 ", `room_id=eq.${roomId}`);
+
       const channel = supabase
-        .channel("messages")
+        .channel(`messages-${roomId}`)
         .on(
           "postgres_changes",
           {
             event: "INSERT",
             schema: "public",
             table: "messages",
+            filter: `room_id=eq.${roomId}`,
           },
           async (payload) => {
-            // 해당 방의 메시지인지 확인
-            if (payload.new.room_id !== roomId) {
-              return;
-            }
+            console.log("📨 새 메시지 수신:", payload.new);
 
             // 사용자 정보 가져오기
             const { data: userData } = await supabase
@@ -130,7 +98,7 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
                     formattedMessage.content.length > 50
                       ? `${formattedMessage.content.substring(0, 50)}...`
                       : formattedMessage.content,
-                  tag: `message-${roomId}`, // 같은 방의 알림은 덮어쓰기
+                  tag: `message-${roomId}`,
                 });
               }
 
@@ -139,47 +107,55 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
           }
         )
         .subscribe((status) => {
+          console.log(`🔗 연결 상태 변경: ${status}`);
+
           if (status === "SUBSCRIBED") {
             setConnectionStatus("connected");
             channelRef.current = channel;
-          } else if (status === "CHANNEL_ERROR") {
-            setConnectionStatus("polling");
-            startPollingMode();
+            console.log("✅ 실시간 연결 성공");
+          } else if (
+            status === "CHANNEL_ERROR" ||
+            status === "TIMED_OUT" ||
+            status === "CLOSED"
+          ) {
+            setConnectionStatus("disconnected");
+            console.log("❌ 실시간 연결 실패");
           }
         });
-    } catch {
-      setConnectionStatus("polling");
-      startPollingMode();
+    } catch (error) {
+      console.error("실시간 구독 설정 실패:", error);
+      setConnectionStatus("disconnected");
     }
-  }, [roomId, startPollingMode]);
+  }, [roomId, userName, showNotification]);
 
   useEffect(() => {
-    // 일단 폴링 모드로 바로 시작
-    setConnectionStatus("polling");
-    startPollingMode();
+    console.log(`🚀 채팅 초기화: room ${roomId}, user ${userName}`);
 
-    // Realtime도 시도해보기
+    // 초기 메시지 로드
+    loadInitialMessages();
+
+    // 실시간 구독 설정
     setupRealtimeSubscription();
 
     return () => {
-      // 정리
+      console.log(`🧹 채팅 정리: room ${roomId}`);
+
+      // 채널 정리
       if (channelRef.current) {
         try {
           channelRef.current.unsubscribe();
-        } catch {
-          // 무시
+        } catch (error) {
+          console.error("채널 구독 해제 실패:", error);
         }
-      }
-
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
+        channelRef.current = null;
       }
     };
-  }, [roomId, userName, setupRealtimeSubscription, startPollingMode]);
+  }, [roomId, userName]);
 
   return {
     messages,
     connectionStatus,
-    fetchMessages,
+    // 수동 새로고침용 (필요시)
+    refreshMessages: loadInitialMessages,
   };
 }

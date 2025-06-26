@@ -58,12 +58,6 @@ export default function ChatRoom() {
         router.push("/");
         return;
       }
-
-      // 기존 메시지 가져오기 (API 사용)
-      const messagesResponse = await fetch(`/api/rooms/${roomId}/messages`);
-      if (messagesResponse.ok) {
-        // useRealtimeChat이 자동으로 메시지를 가져올 것입니다
-      }
     } catch {
       alert("채팅방을 불러오는 중 오류가 발생했습니다.");
       router.push("/");
@@ -97,6 +91,7 @@ export default function ChatRoom() {
 
       if (!response.ok) {
         const data = await response.json();
+
         throw new Error(data.error || "메시지 전송에 실패했습니다.");
       }
     } catch (error) {
