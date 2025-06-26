@@ -56,56 +56,44 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
       console.log("필터 ", `room_id=eq.${roomId}`);
 
       const channel = supabase
-        .channel(`messages-${roomId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `room_id=eq.${roomId}`,
+        .channel(`messages-${roomId}`, {
+          config: {
+            broadcast: { self: true }, // 자신의 broadcast도 받도록 설정
           },
-          async (payload) => {
-            console.log("📨 새 메시지 수신:", payload.new);
+        })
+        .on("broadcast", { event: "message" }, (payload) => {
+          console.log("📨 broadcast 메시지 수신:", payload.payload);
 
-            // 사용자 정보 가져오기
-            const { data: userData } = await supabase
-              .from("users")
-              .select("name")
-              .eq("id", payload.new.user_id)
-              .single();
+          const formattedMessage = {
+            id: payload.payload.id,
+            room_id: payload.payload.room_id,
+            user_id: payload.payload.user_id,
+            content: payload.payload.content,
+            created_at: payload.payload.created_at,
+            user_name: payload.payload.user_name,
+          };
 
-            const formattedMessage = {
-              id: payload.new.id,
-              room_id: payload.new.room_id,
-              user_id: payload.new.user_id,
-              content: payload.new.content,
-              created_at: payload.new.created_at,
-              user_name: userData?.name || "알 수 없는 사용자",
-            };
+          setMessages((prev) => {
+            // 중복 메시지 방지
+            if (prev.some((msg) => msg.id === formattedMessage.id)) {
+              return prev;
+            }
 
-            setMessages((prev) => {
-              // 중복 메시지 방지
-              if (prev.some((msg) => msg.id === formattedMessage.id)) {
-                return prev;
-              }
+            // 다른 사용자의 메시지인 경우에만 알림 표시 (내 메시지는 알림 X)
+            if (formattedMessage.user_name !== userName) {
+              showNotification({
+                title: `새 메시지 - ${formattedMessage.user_name}`,
+                body:
+                  formattedMessage.content.length > 50
+                    ? `${formattedMessage.content.substring(0, 50)}...`
+                    : formattedMessage.content,
+                tag: `message-${roomId}`,
+              });
+            }
 
-              // 다른 사용자의 메시지인 경우에만 알림 표시
-              if (formattedMessage.user_name !== userName) {
-                showNotification({
-                  title: `새 메시지 - ${formattedMessage.user_name}`,
-                  body:
-                    formattedMessage.content.length > 50
-                      ? `${formattedMessage.content.substring(0, 50)}...`
-                      : formattedMessage.content,
-                  tag: `message-${roomId}`,
-                });
-              }
-
-              return [...prev, formattedMessage];
-            });
-          }
-        )
+            return [...prev, formattedMessage];
+          });
+        })
         .subscribe((status) => {
           console.log(`🔗 연결 상태 변경: ${status}`);
 
@@ -152,9 +140,33 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
     };
   }, [roomId, userName]);
 
+  // broadcast 메시지 전송 함수 추가
+  const sendBroadcastMessage = useCallback((message: any) => {
+    if (channelRef.current) {
+      console.log("📤 broadcast 메시지 전송:", message);
+      channelRef.current.send({
+        type: "broadcast",
+        event: "message",
+        payload: message,
+      });
+    }
+  }, []);
+
+  // 로컬 메시지 즉시 추가 함수
+  const addLocalMessage = useCallback((message: Message) => {
+    setMessages((prev) => {
+      // 중복 메시지 방지
+      if (prev.some((msg) => msg.id === message.id)) {
+        return prev;
+      }
+      return [...prev, message];
+    });
+  }, []);
+
   return {
     messages,
     connectionStatus,
+    sendBroadcastMessage,
     // 수동 새로고침용 (필요시)
     refreshMessages: loadInitialMessages,
   };

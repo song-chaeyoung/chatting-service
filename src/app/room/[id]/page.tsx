@@ -19,7 +19,7 @@ export default function ChatRoom() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
 
-  const { messages, connectionStatus } = useRealtimeChat({
+  const { messages, connectionStatus, sendBroadcastMessage } = useRealtimeChat({
     roomId,
     userName,
   });
@@ -78,6 +78,7 @@ export default function ChatRoom() {
     setIsSending(true);
 
     try {
+      // DB에 저장
       const response = await fetch(`/api/rooms/${roomId}/messages`, {
         method: "POST",
         headers: {
@@ -91,8 +92,14 @@ export default function ChatRoom() {
 
       if (!response.ok) {
         const data = await response.json();
-
         throw new Error(data.error || "메시지 전송에 실패했습니다.");
+      }
+
+      const result = await response.json();
+
+      // broadcast로 실시간 전송 (모든 사용자용 - 나 포함)
+      if (sendBroadcastMessage && result.message) {
+        sendBroadcastMessage(result.message);
       }
     } catch (error) {
       console.error("Error sending message:", error);
