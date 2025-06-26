@@ -6,6 +6,15 @@ interface MessageListProps {
   currentUserId: string;
 }
 
+// 이모지만 있는지 확인하는 함수
+const isEmojiOnly = (text: string): boolean => {
+  const trimmed = text.trim();
+
+  const emojiRegex =
+    /^[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F018}-\u{1F270}\u{238C}\u{2934}\u{2935}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}\u{200D}]+$/u;
+  return emojiRegex.test(trimmed) && trimmed.length <= 10; // 최대 10개 문자 (이모지 + 수식어)
+};
+
 export default function MessageList({
   messages,
   currentUserId,
@@ -66,6 +75,66 @@ export default function MessageList({
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.map((message) => {
             const isCurrentUser = message.user_name === currentUserId;
+            const emojiOnly = isEmojiOnly(message.content);
+
+            if (emojiOnly) {
+              return (
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    isCurrentUser ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`flex items-end space-x-2 ${
+                      isCurrentUser
+                        ? "flex-row-reverse space-x-reverse"
+                        : "flex-row"
+                    }`}
+                  >
+                    {/* 아바타 */}
+                    <div className="flex-shrink-0">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                        style={{
+                          backgroundColor: isCurrentUser
+                            ? "rgb(59, 130, 246)"
+                            : `rgb(var(--bg-tertiary))`,
+                          color: isCurrentUser
+                            ? "white"
+                            : `rgb(var(--text-secondary))`,
+                        }}
+                      >
+                        {isCurrentUser
+                          ? "나"
+                          : message.user_name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+
+                    {/* 이모지 메시지 */}
+                    <div className="flex flex-col items-center">
+                      <div
+                        className="text-xs"
+                        style={{ color: `rgb(var(--text-muted))` }}
+                      >
+                        {new Date(message.created_at).toLocaleTimeString(
+                          "ko-KR",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </div>
+                      <div className="text-[40px] select-none">
+                        {message.content.trim()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // 일반 텍스트 메시지 렌더링
             return (
               <div
                 key={message.id}
