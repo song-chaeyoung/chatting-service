@@ -1,37 +1,36 @@
 interface ChatHeaderProps {
   roomName: string;
   userName: string;
-  connectionStatus: "connecting" | "connected" | "disconnected";
+  connectionStatus?: "connecting" | "connected" | "disconnected";
   onExit: () => void;
 }
 
 export default function ChatHeader({
   roomName,
   userName,
-  connectionStatus,
   onExit,
 }: ChatHeaderProps) {
-  const getStatusColor = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "bg-green-500";
-      case "connecting":
-        return "bg-yellow-500";
-      default:
-        return "bg-red-500";
-    }
-  };
+  // const getStatusColor = () => {
+  //   switch (connectionStatus) {
+  //     case "connected":
+  //       return "bg-green-500";
+  //     case "connecting":
+  //       return "bg-yellow-500";
+  //     default:
+  //       return "bg-red-500";
+  //   }
+  // };
 
-  const getStatusText = () => {
-    switch (connectionStatus) {
-      case "connected":
-        return "실시간 연결됨";
-      case "connecting":
-        return "연결 중...";
-      default:
-        return "연결 끊김";
-    }
-  };
+  // const getStatusText = () => {
+  //   switch (connectionStatus) {
+  //     case "connected":
+  //       return "실시간 연결됨";
+  //     case "connecting":
+  //       return "연결 중...";
+  //     default:
+  //       return "연결 끊김";
+  //   }
+  // };
 
   return (
     <div
@@ -49,7 +48,7 @@ export default function ChatHeader({
           >
             {roomName}
           </h1>
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
             <span
               className="text-sm"
@@ -57,7 +56,7 @@ export default function ChatHeader({
             >
               {getStatusText()}
             </span>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center space-x-4">

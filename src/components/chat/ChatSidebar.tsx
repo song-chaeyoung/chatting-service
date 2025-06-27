@@ -378,7 +378,6 @@ export default function ChatSidebar({
         </div>
       </div>
 
-      {/* 채팅방 목록 */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="p-4 text-center">
@@ -486,7 +485,6 @@ export default function ChatSidebar({
         )}
       </div>
 
-      {/* 하단 */}
       <div
         className="p-4"
         style={{ borderTop: `1px solid rgb(var(--border-color))` }}

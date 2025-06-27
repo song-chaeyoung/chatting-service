@@ -8,6 +8,12 @@ interface Member {
   lastAccessedAt: string;
 }
 
+interface OnlineUser {
+  user_id: string;
+  user_name: string;
+  joined_at: string;
+}
+
 interface MemberSidebarProps {
   roomId: string;
   currentUserName: string;
@@ -18,12 +24,12 @@ export default function MemberSidebar({
   currentUserName,
 }: MemberSidebarProps) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchMembers();
 
-    // 실시간 멤버 업데이트 구독
     const subscription = supabase
       .channel(`room_members_${roomId}`)
       .on(
@@ -35,16 +41,49 @@ export default function MemberSidebar({
           filter: `room_id=eq.${roomId}`,
         },
         () => {
-          // 멤버 변경 시 다시 가져오기
           fetchMembers();
         }
       )
-      .subscribe();
+      .on("presence", { event: "sync" }, () => {
+        const state = subscription.presenceState();
+
+        const onlineList: OnlineUser[] = [];
+        Object.keys(state).forEach((userId) => {
+          const presences = state[userId];
+          if (presences && presences.length > 0) {
+            // presence 데이터에서 실제 payload 추출
+            const presence = presences[0] as {
+              presence_ref: string;
+            } & OnlineUser;
+            if (presence.user_id && presence.user_name) {
+              onlineList.push({
+                user_id: presence.user_id,
+                user_name: presence.user_name,
+                joined_at: presence.joined_at,
+              });
+            }
+          }
+        });
+
+        setOnlineUsers(onlineList);
+      })
+
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          const presencePayload = {
+            user_id: currentUserName,
+            user_name: currentUserName,
+            joined_at: new Date().toISOString(),
+          };
+
+          await subscription.track(presencePayload);
+        }
+      });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [roomId]);
+  }, [roomId, currentUserName]);
 
   const fetchMembers = async () => {
     try {
@@ -84,7 +123,6 @@ export default function MemberSidebar({
         borderColor: `rgb(var(--border-color))`,
       }}
     >
-      {/* 헤더 */}
       <div
         className="p-4 border-b"
         style={{ borderColor: `rgb(var(--border-color))` }}
@@ -95,9 +133,14 @@ export default function MemberSidebar({
         >
           참여자 ({members.length})
         </h3>
+        <p
+          className="text-xs mt-1"
+          style={{ color: `rgb(var(--text-secondary))` }}
+        >
+          온라인: {onlineUsers.length}명
+        </p>
       </div>
 
-      {/* 멤버 리스트 */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="p-4 text-center">
@@ -120,78 +163,95 @@ export default function MemberSidebar({
           </div>
         ) : (
           <div className="p-2">
-            {members.map((member) => {
-              const isCurrentUser = member.name === currentUserName;
-              return (
-                <div
-                  key={member.id}
-                  className={`flex items-center space-x-3 p-3 rounded-lg mb-2 ${
-                    isCurrentUser ? "bg-blue-50" : ""
-                  }`}
-                  style={{
-                    backgroundColor: isCurrentUser
-                      ? "rgba(59, 130, 246, 0.1)"
-                      : "transparent",
-                  }}
-                >
-                  {/* 아바타 */}
+            {members
+              .sort((a, b) => {
+                if (a.name === currentUserName) return -1;
+                if (b.name === currentUserName) return 1;
+
+                const aOnline = onlineUsers.some(
+                  (user) => user.user_name === a.name
+                );
+                const bOnline = onlineUsers.some(
+                  (user) => user.user_name === b.name
+                );
+
+                if (aOnline && !bOnline) return -1;
+                if (!aOnline && bOnline) return 1;
+
+                return a.name.localeCompare(b.name);
+              })
+              .map((member) => {
+                const isCurrentUser = member.name === currentUserName;
+                const isOnline = onlineUsers.some(
+                  (user) => user.user_name === member.name
+                );
+                return (
                   <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
+                    key={member.id}
+                    className={`flex items-center space-x-3 p-3 rounded-lg mb-2 ${
+                      isCurrentUser ? "bg-blue-50" : ""
+                    }`}
                     style={{
                       backgroundColor: isCurrentUser
-                        ? "rgb(59, 130, 246)"
-                        : `rgb(var(--bg-tertiary))`,
-                      color: isCurrentUser
-                        ? "white"
-                        : `rgb(var(--text-secondary))`,
+                        ? "rgba(59, 130, 246, 0.1)"
+                        : "transparent",
                     }}
                   >
-                    {member.name.charAt(0).toUpperCase()}
-                  </div>
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0"
+                      style={{
+                        backgroundColor: isCurrentUser
+                          ? "rgb(59, 130, 246)"
+                          : `rgb(var(--bg-tertiary))`,
+                        color: isCurrentUser
+                          ? "white"
+                          : `rgb(var(--text-secondary))`,
+                      }}
+                    >
+                      {member.name.charAt(0).toUpperCase()}
+                    </div>
 
-                  {/* 사용자 정보 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-2">
+                        <p
+                          className="text-sm font-medium truncate"
+                          style={{
+                            color: isCurrentUser
+                              ? "rgb(59, 130, 246)"
+                              : `rgb(var(--text-primary))`,
+                          }}
+                        >
+                          {member.name}
+                          {isCurrentUser && (
+                            <span className="text-xs ml-1 text-blue-500">
+                              (나)
+                            </span>
+                          )}
+                        </p>
+                      </div>
                       <p
-                        className="text-sm font-medium truncate"
-                        style={{
-                          color: isCurrentUser
-                            ? "rgb(59, 130, 246)"
-                            : `rgb(var(--text-primary))`,
-                        }}
+                        className="text-xs truncate"
+                        style={{ color: `rgb(var(--text-muted))` }}
                       >
-                        {member.name}
-                        {isCurrentUser && (
-                          <span className="text-xs ml-1 text-blue-500">
-                            (나)
-                          </span>
-                        )}
+                        {isOnline
+                          ? "온라인"
+                          : getLastSeenText(member.lastAccessedAt)}
                       </p>
                     </div>
-                    <p
-                      className="text-xs truncate"
-                      style={{ color: `rgb(var(--text-muted))` }}
-                    >
-                      {getLastSeenText(member.lastAccessedAt)}
-                    </p>
-                  </div>
 
-                  {/* 온라인 상태 표시 (5분 이내 접속 시 온라인으로 표시) */}
-                  <div className="flex-shrink-0">
-                    {new Date().getTime() -
-                      new Date(member.lastAccessedAt).getTime() <
-                    5 * 60 * 1000 ? (
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    ) : (
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: `rgb(var(--text-muted))` }}
-                      ></div>
-                    )}
+                    <div className="flex-shrink-0">
+                      {isOnline ? (
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      ) : (
+                        <div
+                          className="w-2 h-2 rounded-full"
+                          style={{ backgroundColor: `rgb(var(--text-muted))` }}
+                        ></div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
       </div>

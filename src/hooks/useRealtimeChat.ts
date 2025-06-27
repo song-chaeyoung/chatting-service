@@ -141,9 +141,9 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
   }, [roomId, userName]);
 
   // broadcast 메시지 전송 함수 추가
-  const sendBroadcastMessage = useCallback((message: any) => {
+  const sendBroadcastMessage = useCallback((message: Message) => {
     if (channelRef.current) {
-      console.log("📤 broadcast 메시지 전송:", message);
+      // console.log("📤 broadcast 메시지 전송:", message);
       channelRef.current.send({
         type: "broadcast",
         event: "message",
@@ -153,21 +153,21 @@ export function useRealtimeChat({ roomId, userName }: UseRealtimeChatProps) {
   }, []);
 
   // 로컬 메시지 즉시 추가 함수
-  const addLocalMessage = useCallback((message: Message) => {
-    setMessages((prev) => {
-      // 중복 메시지 방지
-      if (prev.some((msg) => msg.id === message.id)) {
-        return prev;
-      }
-      return [...prev, message];
-    });
-  }, []);
+  // const addLocalMessage = useCallback((message: Message) => {
+  //   setMessages((prev) => {
+  //     // 중복 메시지 방지
+  //     if (prev.some((msg) => msg.id === message.id)) {
+  //       return prev;
+  //     }
+  //     return [...prev, message];
+  //   });
+  // }, []);
 
   return {
     messages,
     connectionStatus,
     sendBroadcastMessage,
-    // 수동 새로고침용 (필요시)
+
     refreshMessages: loadInitialMessages,
   };
 }
