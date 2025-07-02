@@ -8,6 +8,7 @@ import NewRoomForm from "./NewRoomForm";
 import PasswordModal from "./PasswordModal";
 import UserInfo from "./UserInfo";
 import ChatSidebar from "./chat/ChatSidebar";
+import MobileDrawer from "./chat/MobileDrawer";
 
 interface Room {
   id: string;
@@ -34,6 +35,7 @@ export default function ChatManagement({
     id: string;
     name: string;
   } | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useTheme();
 
@@ -143,28 +145,69 @@ export default function ChatManagement({
     }
   };
 
+  const handleToggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
   return (
-    <div className="h-screen flex overflow-hidden">
-      <ChatSidebar userName={userName} />
+    <div className="h-screen flex overflow-hidden relative">
+      {/* 데스크톱 좌측 사이드바 */}
+      <div className="hidden md:block">
+        <ChatSidebar userName={userName} />
+      </div>
+
+      {/* 메인 콘텐츠 영역 */}
       <div
-        className="min-h-screen p-6 flex-1"
+        className="min-h-screen p-4 md:p-6 flex-1"
         style={{ backgroundColor: `rgb(var(--bg-primary))` }}
       >
+        {/* 모바일 헤더 */}
+        <div className="md:hidden flex items-center justify-between mb-6">
+          <h1
+            className="text-xl font-bold"
+            style={{ color: `rgb(var(--text-primary))` }}
+          >
+            Chat It!
+          </h1>
+          <button
+            onClick={handleToggleDrawer}
+            className="p-2 hover:opacity-70 transition-opacity"
+            style={{ color: `rgb(var(--text-primary))` }}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+
         <div className="max-w-4xl mx-auto w-full">
-          <UserInfo userName={userName} onUserNameChange={onUserNameChange} />
+          {/* 데스크톱 사용자 정보 */}
+          <div className="hidden md:block">
+            <UserInfo userName={userName} onUserNameChange={onUserNameChange} />
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-3">
               <div className="flex justify-between items-center mb-4">
                 <h2
-                  className="text-xl font-semibold"
+                  className="text-lg md:text-xl font-semibold"
                   style={{ color: `rgb(var(--text-primary))` }}
                 >
                   채팅방 목록
                 </h2>
                 <button
                   onClick={() => setShowNewRoomForm(true)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  className="px-3 py-2 md:px-4 md:py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm md:text-base"
                 >
                   새 채팅방 만들기
                 </button>
@@ -175,28 +218,6 @@ export default function ChatManagement({
                 onJoinPrivateRoom={handleJoinPrivateRoom}
               />
             </div>
-
-            {/* <div className="space-y-6">
-              <div
-                className="p-4 rounded-lg"
-                style={{ backgroundColor: `rgb(var(--bg-secondary))` }}
-              >
-                <h3
-                  className="font-semibold mb-2"
-                  style={{ color: `rgb(var(--text-primary))` }}
-                >
-                  사용법
-                </h3>
-                <ul
-                  className="text-sm space-y-1"
-                  style={{ color: `rgb(var(--text-secondary))` }}
-                >
-                  <li>• 채팅방을 클릭하면 입장할 수 있습니다</li>
-                  <li>• 🔒 표시가 있는 방은 비공개 채팅방입니다</li>
-                  <li>• 새 채팅방을 만들어 친구들과 대화하세요</li>
-                </ul>
-              </div>
-            </div> */}
           </div>
         </div>
 
@@ -217,6 +238,16 @@ export default function ChatManagement({
           />
         )}
       </div>
+
+      {/* 모바일 드로어 */}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        type="home"
+        userName={userName}
+        onUserNameChange={onUserNameChange}
+        onCreateRoom={handleCreateRoom}
+      />
     </div>
   );
 }

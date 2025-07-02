@@ -1,18 +1,4 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-
-interface Member {
-  id: string;
-  name: string;
-  joinedAt: string;
-  lastAccessedAt: string;
-}
-
-interface OnlineUser {
-  user_id: string;
-  user_name: string;
-  joined_at: string;
-}
+import { useMemberSubscription } from "@/hooks/useMemberSubscription";
 
 interface MemberSidebarProps {
   roomId: string;
@@ -23,84 +9,10 @@ export default function MemberSidebar({
   roomId,
   currentUserName,
 }: MemberSidebarProps) {
-  const [members, setMembers] = useState<Member[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchMembers();
-
-    const subscription = supabase
-      .channel(`room_members_${roomId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "room_members",
-          filter: `room_id=eq.${roomId}`,
-        },
-        () => {
-          fetchMembers();
-        }
-      )
-      .on("presence", { event: "sync" }, () => {
-        const state = subscription.presenceState();
-
-        const onlineList: OnlineUser[] = [];
-        Object.keys(state).forEach((userId) => {
-          const presences = state[userId];
-          if (presences && presences.length > 0) {
-            // presence 데이터에서 실제 payload 추출
-            const presence = presences[0] as {
-              presence_ref: string;
-            } & OnlineUser;
-            if (presence.user_id && presence.user_name) {
-              onlineList.push({
-                user_id: presence.user_id,
-                user_name: presence.user_name,
-                joined_at: presence.joined_at,
-              });
-            }
-          }
-        });
-
-        setOnlineUsers(onlineList);
-      })
-
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          const presencePayload = {
-            user_id: currentUserName,
-            user_name: currentUserName,
-            joined_at: new Date().toISOString(),
-          };
-
-          await subscription.track(presencePayload);
-        }
-      });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [roomId, currentUserName]);
-
-  const fetchMembers = async () => {
-    try {
-      const response = await fetch(`/api/rooms/${roomId}/members`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setMembers(data.members);
-      } else {
-        console.error("❌ Error fetching members:", data.error);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching members:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { members, onlineUsers, isLoading } = useMemberSubscription(
+    roomId,
+    currentUserName
+  );
 
   const getLastSeenText = (lastAccessedAt: string) => {
     const now = new Date();

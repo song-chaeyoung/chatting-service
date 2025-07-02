@@ -8,6 +8,7 @@ import ChatSidebar from "@/components/chat/ChatSidebar";
 import MessageList from "@/components/chat/MessageList";
 import MessageInput from "@/components/chat/MessageInput";
 import MemberSidebar from "@/components/chat/MemberSidebar";
+import MobileDrawer from "@/components/chat/MobileDrawer";
 import NotificationPermission from "@/components/NotificationPermission";
 
 export default function ChatRoom() {
@@ -18,6 +19,7 @@ export default function ChatRoom() {
   const [userName, setUserName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const { messages, connectionStatus, sendBroadcastMessage } = useRealtimeChat({
     roomId,
@@ -113,6 +115,14 @@ export default function ChatRoom() {
     router.push("/");
   };
 
+  const handleGoHome = () => {
+    router.push("/");
+  };
+
+  const handleToggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
+
   if (isLoading) {
     return (
       <div
@@ -131,11 +141,15 @@ export default function ChatRoom() {
 
   return (
     <div
-      className="h-screen flex overflow-hidden"
+      className="h-screen flex overflow-hidden relative"
       style={{ backgroundColor: `rgb(var(--bg-secondary))` }}
     >
-      <ChatSidebar currentRoomId={roomId} userName={userName} />
+      {/* 데스크톱 좌측 사이드바 */}
+      <div className="hidden md:block">
+        <ChatSidebar currentRoomId={roomId} userName={userName} />
+      </div>
 
+      {/* 메인 채팅 영역 */}
       <div
         className="flex-1 flex flex-col"
         style={{ backgroundColor: `rgb(var(--bg-primary))` }}
@@ -146,6 +160,8 @@ export default function ChatRoom() {
             userName={userName}
             connectionStatus={connectionStatus}
             onExit={handleExit}
+            onGoHome={handleGoHome}
+            onToggleDrawer={handleToggleDrawer}
           />
         </div>
 
@@ -162,9 +178,22 @@ export default function ChatRoom() {
               />
             </div>
           </div>
-          <MemberSidebar roomId={roomId} currentUserName={userName} />
+
+          {/* 데스크톱 우측 멤버 사이드바 */}
+          <div className="hidden md:block">
+            <MemberSidebar roomId={roomId} currentUserName={userName} />
+          </div>
         </div>
       </div>
+
+      {/* 모바일 드로어 */}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        type="chat"
+        roomId={roomId}
+        userName={userName}
+      />
     </div>
   );
 }
