@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Message } from "@/lib/supabase";
+import { parseTextWithLinks } from "@/lib/link-utils";
+import LinkPreview from "@/components/LinkPreview";
 
 interface MessageListProps {
   messages: Message[];
@@ -21,6 +23,16 @@ export default function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const prevMessagesRef = useRef(0);
+
+  // 디버깅: 메시지 데이터 확인
+  console.log("=== FRONTEND DEBUG START ===");
+  console.log("Total messages:", messages.length);
+  console.log(
+    "Messages with links:",
+    messages.filter((m) => m.links && m.links.length > 0)
+  );
+  console.log("Sample message:", messages[0]);
+  console.log("=== FRONTEND DEBUG END ===");
 
   useEffect(() => {
     if (prevMessagesRef.current < messages.length) {
@@ -211,8 +223,46 @@ export default function MessageList({
                           : `rgb(var(--text-primary))`,
                       }}
                     >
-                      {message.content}
+                      {parseTextWithLinks(message.content).map(
+                        (part, index) => {
+                          if (
+                            typeof part === "object" &&
+                            part.type === "link"
+                          ) {
+                            return (
+                              <a
+                                key={index}
+                                href={part.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:opacity-80 transition-opacity"
+                                style={{
+                                  color: isCurrentUser
+                                    ? `rgb(var(--message-own-text))`
+                                    : `rgb(var(--text-primary))`,
+                                }}
+                              >
+                                {part.text}
+                              </a>
+                            );
+                          }
+                          return <span key={index}>{String(part)}</span>;
+                        }
+                      )}
                     </div>
+
+                    {/* 링크 미리보기 */}
+                    {message.links && message.links.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {message.links.map((link) => (
+                          <LinkPreview
+                            key={link.id}
+                            link={link}
+                            isCurrentUser={isCurrentUser}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

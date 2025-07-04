@@ -22,6 +22,16 @@ export interface Message {
   content: string;
   created_at: string;
   user_name: string;
+  links?: MessageLink[];
+}
+
+export interface MessageLink {
+  id: string;
+  message_id: string;
+  url: string;
+  title?: string;
+  description?: string;
+  created_at: string;
 }
 
 export interface User {
